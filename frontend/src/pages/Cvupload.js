@@ -50,7 +50,7 @@ function CVUpload() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/cv",
+        "https://project-1-iwpz.onrender.com/api/cv",
         {
           method: "POST",
           body: formData,
