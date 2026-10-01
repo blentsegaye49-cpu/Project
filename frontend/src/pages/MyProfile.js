@@ -21,7 +21,7 @@ function MyProfile() {
 
       try {
         const response = await fetch(
-          `https://project-1-iwpz.onrender.com/api/profile-setup/${encodeURIComponent(
+          `https://project-qxyh.onrender.com/api/profile-setup/${encodeURIComponent(
             userEmail
           )}`
         );
@@ -52,7 +52,7 @@ function MyProfile() {
     if (!fileName && cv.filePath) {
       fileName = cv.filePath.split(/[\\/]/).pop();
     }
-    return `https://project-1-iwpz.onrender.com/uploads/cv/${encodeURIComponent(fileName)}`;
+    return `https://project-qxyh.onrender.com/uploads/cv/${encodeURIComponent(fileName)}`;
   };
 
   if (loading) {
