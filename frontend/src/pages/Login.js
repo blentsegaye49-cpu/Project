@@ -81,7 +81,7 @@ function Login() {
 
       try {
         const profileCheck = await fetch(
-          `http://localhost:5000/api/profile-setup/${encodeURIComponent(
+          `https://project-1-iwpz.onrender.com/api/profile-setup/${encodeURIComponent(
             userEmail
           )}`
         );
