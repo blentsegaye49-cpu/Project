@@ -1,11 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+// ---- PUT YOUR RENDER BACKEND LINK HERE (no slash at the end) ----
+const API_URL = "https://project-qxyh.onrender.com";
+
+// ---- CHANGE THESE TWO to match your backend upload route ----
+const CV_UPLOAD_URL = `${API_URL}/api/upload-cv`;
+const CV_FIELD_NAME = "cv"; // must match upload.single("cv") on the server
 
 function MyProfile() {
   const [profile, setProfile] = useState(null);
   const [cv, setCv] = useState(null);
   const [showCV, setShowCV] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // CV change state
+  const [editingCV, setEditingCV] = useState(false);
+  const [newCvFile, setNewCvFile] = useState(null);
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [cvSaved, setCvSaved] = useState(false);
+  const [cvError, setCvError] = useState("");
+  const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -21,7 +36,7 @@ function MyProfile() {
 
       try {
         const response = await fetch(
-          `https://project-qxyh.onrender.com/api/profile-setup/${encodeURIComponent(
+          `${API_URL}/api/profile-setup/${encodeURIComponent(
             userEmail
           )}`
         );
@@ -46,13 +61,131 @@ function MyProfile() {
     loadProfile();
   }, []);
 
+  // Called by each card when the user presses Confirm
+  const saveSection = async (changes) => {
+    const updatedProfile = { ...profile, ...changes };
+
+    // 1. Show the new info immediately
+    setProfile(updatedProfile);
+    localStorage.setItem("profileData", JSON.stringify(updatedProfile));
+
+    // 2. Save to the backend
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const userEmail = storedUser ? storedUser.email : null;
+
+    if (userEmail) {
+      try {
+        await fetch(
+          `${API_URL}/api/profile-setup/${encodeURIComponent(
+            userEmail
+          )}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ profile: updatedProfile }),
+          }
+        );
+      } catch (error) {
+        console.error("Could not save profile:", error);
+      }
+    }
+  };
+
+  const MAX_CV_SIZE = 5 * 1024 * 1024; // 5 MB
+
+  const startCvEdit = () => {
+    setShowCV(false);
+    setNewCvFile(null);
+    setCvError("");
+    setCvSaved(false);
+    setEditingCV(true);
+  };
+
+  const cancelCvEdit = () => {
+    setNewCvFile(null);
+    setCvError("");
+    setEditingCV(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleCvPick = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > MAX_CV_SIZE) {
+      setCvError("File is too large. Maximum size is 5 MB.");
+      setNewCvFile(null);
+      return;
+    }
+    setCvError("");
+    setNewCvFile(file);
+  };
+
+  const confirmCvChange = async () => {
+    if (!newCvFile || uploadingCV) return;
+    setUploadingCV(true);
+    setCvError("");
+
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      const formData = new FormData();
+      formData.append(CV_FIELD_NAME, newCvFile);
+      if (storedUser && storedUser.email) {
+        formData.append("email", storedUser.email);
+      }
+
+      const response = await fetch(CV_UPLOAD_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            `Server responded with ${response.status} (${response.statusText})`
+        );
+      }
+
+      const serverCv = data.cv || data.file || data.uploadedCV || {};
+      if (!serverCv.fileName && (data.fileName || data.filename)) {
+        serverCv.fileName = data.fileName || data.filename;
+      }
+
+      const updatedCv = {
+        originalName: newCvFile.name,
+        fileSize: newCvFile.size,
+        fileType: newCvFile.type,
+        ...serverCv,
+      };
+
+      setCv(updatedCv);
+      localStorage.setItem("uploadedCV", JSON.stringify(updatedCv));
+      setNewCvFile(null);
+      setEditingCV(false);
+      setCvSaved(true);
+      setTimeout(() => setCvSaved(false), 2500);
+    } catch (error) {
+      console.error("Could not upload CV:", error);
+      setCvError(
+        error.message === "Failed to fetch"
+          ? "Cannot reach the server. Please check that your backend is running and CORS is enabled."
+          : `Could not upload your CV: ${error.message}`
+      );
+    }
+
+    setUploadingCV(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const getCVUrl = () => {
     if (!cv) return "";
     let fileName = cv.fileName;
     if (!fileName && cv.filePath) {
       fileName = cv.filePath.split(/[\\/]/).pop();
     }
-    return `https://project-qxyh.onrender.com/uploads/cv/${encodeURIComponent(fileName)}`;
+    return `${API_URL}/uploads/cv/${encodeURIComponent(fileName)}`;
   };
 
   if (loading) {
@@ -84,47 +217,69 @@ function MyProfile() {
       </div>
 
       <div className="profile-cards">
-        <div className="profile-info-card">
-          <h2>Basic Information</h2>
-          <ProfileRow label="Full Name" value={profile.fullName} />
-          <ProfileRow label="Country" value={profile.country} />
-          <ProfileRow label="Region" value={profile.region} />
-          <ProfileRow label="City" value={profile.city} />
-        </div>
+        <EditableCard
+          title="Basic Information"
+          profile={profile}
+          onSave={saveSection}
+          fields={[
+            { key: "fullName", label: "Full Name" },
+            { key: "country", label: "Country" },
+            { key: "region", label: "Region" },
+            { key: "city", label: "City" },
+          ]}
+        />
 
-        <div className="profile-info-card">
-          <h2>Education</h2>
-          <ProfileRow label="Education Level" value={profile.educationLevel} />
-          <ProfileRow label="Institution" value={profile.institution} />
-          <ProfileRow label="Field of Study" value={profile.fieldOfStudy} />
-          <ProfileRow label="Graduation Year" value={profile.graduationYear} />
-        </div>
+        <EditableCard
+          title="Education"
+          profile={profile}
+          onSave={saveSection}
+          fields={[
+            { key: "educationLevel", label: "Education Level" },
+            { key: "institution", label: "Institution" },
+            { key: "fieldOfStudy", label: "Field of Study" },
+            { key: "graduationYear", label: "Graduation Year" },
+          ]}
+        />
 
-        <div className="profile-info-card">
-          <h2>Work Experience</h2>
-          <ProfileRow label="Job Title" value={profile.jobTitle} />
-          <ProfileRow label="Company" value={profile.company} />
-          <ProfileRow label="Start Date" value={profile.startDate} />
-          <ProfileRow label="End Date" value={profile.endDate} />
-        </div>
+        <EditableCard
+          title="Work Experience"
+          profile={profile}
+          onSave={saveSection}
+          fields={[
+            { key: "jobTitle", label: "Job Title" },
+            { key: "company", label: "Company" },
+            { key: "startDate", label: "Start Date" },
+            { key: "endDate", label: "End Date" },
+          ]}
+        />
 
-        <div className="profile-info-card">
-          <h2>Skills</h2>
-          <ProfileRow label="Skill" value={profile.skill} />
-          <ProfileRow label="Skill Level" value={profile.skillLevel} />
-        </div>
+        <EditableCard
+          title="Skills"
+          profile={profile}
+          onSave={saveSection}
+          fields={[
+            { key: "skill", label: "Skill" },
+            { key: "skillLevel", label: "Skill Level" },
+          ]}
+        />
 
-        <div className="profile-info-card">
-          <h2>Career Preferences</h2>
-          <ProfileRow label="Preferred Industry" value={profile.industry} />
-          <ProfileRow label="Employment Type" value={profile.employmentType} />
-        </div>
+        <EditableCard
+          title="Career Preferences"
+          profile={profile}
+          onSave={saveSection}
+          fields={[
+            { key: "industry", label: "Preferred Industry" },
+            { key: "employmentType", label: "Employment Type" },
+          ]}
+        />
 
-        {cv && (
+        {(
           <div className="profile-info-card cv-card">
             <h2>My CV</h2>
 
-            {!showCV ? (
+            {!cv ? (
+              <p>No CV uploaded yet.</p>
+            ) : !showCV ? (
               <div className="cv-file">
                 <span className="cv-file-icon">📄</span>
                 <div>
@@ -202,6 +357,130 @@ function MyProfile() {
                 )}
               </div>
             )}
+
+            {/* hidden file picker */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,image/*"
+              onChange={handleCvPick}
+              style={{ display: "none" }}
+            />
+
+            {editingCV && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  padding: "14px",
+                  border: "2px dashed #4fc3a1",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <span style={{ fontSize: "15px" }}>
+                  {newCvFile
+                    ? `📎 ${newCvFile.name} (${Math.round(
+                        newCvFile.size / 1024
+                      )} KB)`
+                    : "No new file selected"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  style={{
+                    padding: "8px 20px",
+                    border: "2px solid #4fc3a1",
+                    borderRadius: "20px",
+                    background: "#ffffff",
+                    color: "#4fc3a1",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                  }}
+                >
+                  {newCvFile ? "Choose another" : "Choose file"}
+                </button>
+              </div>
+            )}
+
+            {cvError && (
+              <p style={{ color: "#d9534f", marginTop: "10px" }}>{cvError}</p>
+            )}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: "12px",
+                marginTop: "20px",
+              }}
+            >
+              {cvSaved && !editingCV && (
+                <span style={{ color: "#4fc3a1", fontWeight: "bold" }}>
+                  ✓ CV updated
+                </span>
+              )}
+
+              {!editingCV ? (
+                <button
+                  type="button"
+                  onClick={startCvEdit}
+                  style={{
+                    padding: "10px 28px",
+                    borderRadius: "20px",
+                    background: "#ffffff",
+                    color: "#4fc3a1",
+                    border: "2px solid #4fc3a1",
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                  }}
+                >
+                  {cv ? "Change CV" : "Upload CV"}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={cancelCvEdit}
+                    style={{
+                      padding: "10px 28px",
+                      border: "none",
+                      borderRadius: "20px",
+                      background: "#e0e0e0",
+                      color: "#333333",
+                      fontSize: "15px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmCvChange}
+                    disabled={!newCvFile || uploadingCV}
+                    style={{
+                      padding: "10px 28px",
+                      border: "none",
+                      borderRadius: "20px",
+                      background: newCvFile ? "#4fc3a1" : "#cfcfcf",
+                      color: newCvFile ? "#ffffff" : "#8a8a8a",
+                      fontSize: "15px",
+                      fontWeight: "bold",
+                      cursor:
+                        newCvFile && !uploadingCV ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    {uploadingCV ? "Uploading..." : "Confirm"}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -230,6 +509,145 @@ function MyProfile() {
         >
           FINISH
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Card with Edit / Cancel / Confirm ---------- */
+
+function EditableCard({ title, fields, profile, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const startEdit = () => {
+    const initial = {};
+    fields.forEach((f) => {
+      initial[f.key] = profile[f.key] ?? "";
+    });
+    setDraft(initial);
+    setSaved(false);
+    setEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setDraft({});
+    setEditing(false);
+  };
+
+  // true only when something is different from the saved profile
+  const hasChanged = fields.some(
+    (f) => String(draft[f.key] ?? "") !== String(profile[f.key] ?? "")
+  );
+
+  const confirmEdit = async () => {
+    if (!hasChanged || saving) return;
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false);
+    setEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const baseBtn = {
+    padding: "10px 28px",
+    border: "none",
+    borderRadius: "20px",
+    fontSize: "15px",
+    fontWeight: "bold",
+  };
+
+  return (
+    <div className="profile-info-card">
+      <h2>{title}</h2>
+
+      {fields.map((f) =>
+        editing ? (
+          <div className="profile-row" key={f.key}>
+            <span>{f.label}</span>
+            <input
+              type="text"
+              value={draft[f.key] ?? ""}
+              onChange={(e) =>
+                setDraft({ ...draft, [f.key]: e.target.value })
+              }
+              style={{
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid #4fc3a1",
+                fontSize: "15px",
+                outline: "none",
+                minWidth: "180px",
+              }}
+            />
+          </div>
+        ) : (
+          <ProfileRow key={f.key} label={f.label} value={profile[f.key]} />
+        )
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          gap: "12px",
+          marginTop: "20px",
+        }}
+      >
+        {saved && !editing && (
+          <span style={{ color: "#4fc3a1", fontWeight: "bold" }}>
+            ✓ Updated
+          </span>
+        )}
+
+        {!editing ? (
+          <button
+            type="button"
+            onClick={startEdit}
+            style={{
+              ...baseBtn,
+              background: "#ffffff",
+              color: "#4fc3a1",
+              border: "2px solid #4fc3a1",
+              cursor: "pointer",
+            }}
+          >
+            Edit
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={cancelEdit}
+              style={{
+                ...baseBtn,
+                background: "#e0e0e0",
+                color: "#333333",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={confirmEdit}
+              disabled={!hasChanged || saving}
+              style={{
+                ...baseBtn,
+                background: hasChanged ? "#4fc3a1" : "#cfcfcf",
+                color: hasChanged ? "#ffffff" : "#8a8a8a",
+                cursor: hasChanged && !saving ? "pointer" : "not-allowed",
+              }}
+            >
+              {saving ? "Saving..." : "Confirm"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
