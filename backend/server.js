@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
@@ -23,9 +25,14 @@ if (!MONGO_URI) {
 // Middleware
 // -----------------------------
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  process.env.FRONTEND_URL, // your deployed frontend link, set in Render > Environment
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -37,6 +44,42 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// -----------------------------
+// CV upload setup (used by the "Change CV" button in My Profile)
+// -----------------------------
+
+const cvUploadDir = path.join(__dirname, "uploads", "cv");
+fs.mkdirSync(cvUploadDir, { recursive: true });
+
+const cvStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, cvUploadDir),
+  filename: (req, file, cb) => {
+    const safeName = file.originalname.replace(/\s+/g, "_");
+    cb(null, `${Date.now()}-${safeName}`);
+  },
+});
+
+const allowedCvTypes = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+const cvUpload = multer({
+  storage: cvStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (
+      allowedCvTypes.includes(file.mimetype) ||
+      file.mimetype.startsWith("image/")
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF, DOC, DOCX or image files are allowed."));
+    }
+  },
+});
 
 // -----------------------------
 // Test route
@@ -55,6 +98,27 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/api/profile-setup", profileSetupRoutes);
 app.use("/api/cv", cvRoutes);
+
+// Change / replace CV from My Profile page
+app.post("/api/upload-cv", cvUpload.single("cv"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: "No file uploaded.",
+    });
+  }
+
+  res.json({
+    success: true,
+    cv: {
+      fileName: req.file.filename,
+      originalName: req.file.originalname,
+      fileSize: req.file.size,
+      fileType: req.file.mimetype,
+      filePath: req.file.path,
+    },
+  });
+});
 
 // -----------------------------
 // 404 handler (must come AFTER all real routes)
