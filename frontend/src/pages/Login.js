@@ -44,7 +44,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://project-1-iwpz.onrender.com/auth/login", {
+      const response = await fetch("https://project-qxyh.onrender.com/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -81,7 +81,7 @@ function Login() {
 
       try {
         const profileCheck = await fetch(
-          `https://project-1-iwpz.onrender.com/api/profile-setup/${encodeURIComponent(
+          `https://project-qxyh.onrender.com/api/profile-setup/${encodeURIComponent(
             userEmail
           )}`
         );
