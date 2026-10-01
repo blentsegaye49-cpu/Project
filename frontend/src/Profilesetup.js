@@ -102,7 +102,7 @@ const navigate=useNavigate();
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/profile-setup",
+        "https://project-qxyh.onrender.com/api/profile-setup",
         {
           method: "POST",
           headers: {
