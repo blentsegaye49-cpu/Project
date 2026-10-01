@@ -53,7 +53,7 @@ function Signup() {
     setSubmitting(true);
     setServerError(null);
     try {
-      const response = await fetch("https://project-1-iwpz.onrender.com/auth/signup", {
+      const response = await fetch("https://project-qxyh.onrender.com/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
