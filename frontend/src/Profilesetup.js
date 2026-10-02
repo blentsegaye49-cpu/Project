@@ -136,7 +136,7 @@ const navigate=useNavigate();
     } catch (err) {
       console.error("Profile submit error:", err);
       setError(`Cannot connect to the backend server. (${err.message})`);
-    }
+    };
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
