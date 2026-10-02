@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const API_URL = "https://project-qxyh.onrender.com";
 
 // ---- CHANGE THESE TWO to match your backend upload route ----
-const CV_UPLOAD_URL = `${API_URL}/api/upload-cv`;
+const CV_UPLOAD_URL = `${API_URL}/api/cv`; // same route your CV upload page already uses
 const CV_FIELD_NAME = "cv"; // must match upload.single("cv") on the server
 
 function MyProfile() {
