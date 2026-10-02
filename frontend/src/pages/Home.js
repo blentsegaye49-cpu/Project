@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const trustedLogos = [
   {
@@ -88,6 +88,10 @@ const companies = [
 
 function Home() {
   const navigate = useNavigate();
+
+  // When a footer link opens a new page, start from the top of that page
+  const scrollToTop = () => window.scrollTo(0, 0);
+
   const [currentSlide, setCurrentSlide] = useState(0);
 
   return (
@@ -234,7 +238,7 @@ function Home() {
 
       {/* ================= HOW IT WORKS ================= */}
 
-      <section className="how-section">
+      <section className="how-section" id="how-it-works">
         <h2>How Ethiojobs Works</h2>
 
         <div className="how-grid">
@@ -281,25 +285,50 @@ function Home() {
           <div>
             <h3>Job Seekers</h3>
 
-            <a href="#find">Find Jobs</a>
+            <Link to="/jobs" onClick={scrollToTop}>
+              Find Jobs
+            </Link>
 
-            <a href="#register">Register</a>
+            <Link to="/signup" onClick={scrollToTop}>
+              Register
+            </Link>
 
-            <a href="#cv">Post CVs</a>
+            <Link to="/cv-upload" onClick={scrollToTop}>
+              Post CVs
+            </Link>
 
-            <a href="#alerts">Job Alerts</a>
+            <Link to="/jobs" onClick={scrollToTop}>
+              Job Alerts
+            </Link>
           </div>
 
           <div>
             <h3>Employers</h3>
 
-            <a href="#login">Login</a>
+            <Link to="/login" onClick={scrollToTop}>
+              Login
+            </Link>
 
-            <a href="#register">Register</a>
+            <Link to="/signup" onClick={scrollToTop}>
+              Register
+            </Link>
 
-            <a href="#post">Post Jobs</a>
+            <Link to="/contact" onClick={scrollToTop}>
+              Post Jobs
+            </Link>
 
-            <a href="#features">Features</a>
+            <a
+              href="#how-it-works"
+              onClick={(e) => {
+                e.preventDefault();
+                const section = document.getElementById("how-it-works");
+                if (section) {
+                  section.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              Features
+            </a>
           </div>
 
           <div>
@@ -311,9 +340,15 @@ function Home() {
 
             <p>Addis Ababa, Ethiopia</p>
 
-            <p>Phone: 0116198020</p>
+            <p>
+              Phone: <a href="tel:0116198020">0116198020</a>
+            </p>
 
-            <p>candidates@ethiojobs.net</p>
+            <p>
+              <a href="mailto:candidates@ethiojobs.net">
+                candidates@ethiojobs.net
+              </a>
+            </p>
           </div>
         </div>
       </footer>
