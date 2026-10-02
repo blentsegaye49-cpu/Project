@@ -99,8 +99,9 @@ const navigate=useNavigate();
       window.scrollTo(0, 0);
       return;
     }
-
     try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+
       const response = await fetch(
         "https://project-qxyh.onrender.com/api/profile-setup",
         {
@@ -108,41 +109,34 @@ const navigate=useNavigate();
           headers: {
             "Content-Type": "application/json",
           },
-        body: JSON.stringify({
-  ...form,
-  email: JSON.parse(
-    localStorage.getItem("user")
-  )?.email || "",
-}),
+          body: JSON.stringify({
+            ...form,
+            email: storedUser?.email || "",
+          }),
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setError(
-          data.message || "Profile submission failed."
+          data.message ||
+            `Profile submission failed (status ${response.status}).`
         );
         return;
       }
-setSuccess("Profile completed and saved successfully!");
 
-localStorage.setItem(
-  "profileData",
-  JSON.stringify(form)
-);
+      setSuccess("Profile completed and saved successfully!");
 
-setTimeout(() => {
-  navigate("/cv-upload");
-}, 1500);
-     
-    } catch (error) {
-      setError(
-        "Cannot connect to the backend server."
-      );
+      localStorage.setItem("profileData", JSON.stringify(form));
+
+      setTimeout(() => {
+        navigate("/cv-upload");
+      }, 1500);
+    } catch (err) {
+      console.error("Profile submit error:", err);
+      setError(`Cannot connect to the backend server. (${err.message})`);
     }
-  };
-
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
