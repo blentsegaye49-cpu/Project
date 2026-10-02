@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 function Profilesetup() {
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-const navigate=useNavigate();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     fullName: "",
     country: "",
@@ -69,10 +71,7 @@ const navigate=useNavigate();
     }
 
     if (currentStep === 4) {
-      return (
-        form.skill.trim() !== "" &&
-        form.skillLevel.trim() !== ""
-      );
+      return form.skill.trim() !== "" && form.skillLevel.trim() !== "";
     }
 
     if (currentStep === 5) {
@@ -99,6 +98,7 @@ const navigate=useNavigate();
       window.scrollTo(0, 0);
       return;
     }
+
     try {
       const storedUser = JSON.parse(localStorage.getItem("user") || "null");
 
@@ -136,7 +136,9 @@ const navigate=useNavigate();
     } catch (err) {
       console.error("Profile submit error:", err);
       setError(`Cannot connect to the backend server. (${err.message})`);
-    };
+    }
+  };
+
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -166,24 +168,16 @@ const navigate=useNavigate();
           return (
             <React.Fragment key={title}>
               <div
-                className={`step-item ${
-                  completed ? "completed" : ""
-                } ${
+                className={`step-item ${completed ? "completed" : ""} ${
                   active ? "in-progress" : ""
                 }`}
               >
-                <div className="step-icon">
-                  {completed ? "✓" : ""}
-                </div>
+                <div className="step-icon">{completed ? "✓" : ""}</div>
 
                 <div className="step-information">
-                  <div className="step-number">
-                    STEP {stepNumber}
-                  </div>
+                  <div className="step-number">STEP {stepNumber}</div>
 
-                  <div className="step-title">
-                    {title}
-                  </div>
+                  <div className="step-title">{title}</div>
 
                   <div className="step-status">
                     {completed
@@ -195,9 +189,7 @@ const navigate=useNavigate();
                 </div>
               </div>
 
-              {stepNumber < 6 && (
-                <div className="step-line"></div>
-              )}
+              {stepNumber < 6 && <div className="step-line"></div>}
             </React.Fragment>
           );
         })}
@@ -206,15 +198,10 @@ const navigate=useNavigate();
       <main className="profile-form-area">
         {currentStep === 1 && (
           <div className="profile-form">
-
             <div className="profile-form-group">
               <label>
-                Full Name{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Full Name <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Full Name"
@@ -225,12 +212,8 @@ const navigate=useNavigate();
 
             <div className="profile-form-group">
               <label>
-                Country{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Country <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Country"
@@ -241,19 +224,10 @@ const navigate=useNavigate();
 
             <div className="profile-form-group">
               <label>
-                Region{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Region <span className="required-star">*</span>
               </label>
-
-              <select
-                value={form.region}
-                onChange={handleChange("region")}
-              >
-                <option value="">
-                  Select Region
-                </option>
+              <select value={form.region} onChange={handleChange("region")}>
+                <option value="">Select Region</option>
                 <option>Addis Ababa</option>
                 <option>Afar</option>
                 <option>Amhara</option>
@@ -272,12 +246,8 @@ const navigate=useNavigate();
 
             <div className="profile-form-group">
               <label>
-                City{" "}
-                <span className="required-star">
-                  *
-                </span>
+                City <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter City"
@@ -289,19 +259,13 @@ const navigate=useNavigate();
             {/* Phone Number */}
             <div className="profile-form-group">
               <label>
-                Phone Number{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Phone Number <span className="required-star">*</span>
               </label>
-
               <input
                 type="tel"
                 placeholder="Enter Phone Number"
                 value={form.phoneNumber}
-                onChange={handleChange(
-                  "phoneNumber"
-                )}
+                onChange={handleChange("phoneNumber")}
               />
             </div>
 
@@ -318,85 +282,55 @@ const navigate=useNavigate();
           <div className="profile-form">
             <div className="profile-form-group">
               <label>
-                Education Level{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Education Level <span className="required-star">*</span>
               </label>
-
               <select
                 value={form.educationLevel}
-                onChange={handleChange(
-                  "educationLevel"
-                )}
+                onChange={handleChange("educationLevel")}
               >
-                <option value="">
-                  Select Education Level
-                </option>
+                <option value="">Select Education Level</option>
                 <option>High School</option>
                 <option>Certificate</option>
                 <option>Diploma</option>
-                <option>
-                  Bachelor's Degree
-                </option>
-                <option>
-                  Master's Degree
-                </option>
+                <option>Bachelor's Degree</option>
+                <option>Master's Degree</option>
                 <option>PhD</option>
               </select>
             </div>
 
             <div className="profile-form-group">
               <label>
-                Institution{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Institution <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Institution"
                 value={form.institution}
-                onChange={handleChange(
-                  "institution"
-                )}
+                onChange={handleChange("institution")}
               />
             </div>
 
             <div className="profile-form-group">
               <label>
-                Field of Study{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Field of Study <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Field of Study"
                 value={form.fieldOfStudy}
-                onChange={handleChange(
-                  "fieldOfStudy"
-                )}
+                onChange={handleChange("fieldOfStudy")}
               />
             </div>
 
             <div className="profile-form-group">
               <label>
-                Graduation Year{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Graduation Year <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Graduation Year"
                 value={form.graduationYear}
-                onChange={handleChange(
-                  "graduationYear"
-                )}
+                onChange={handleChange("graduationYear")}
               />
             </div>
 
@@ -413,71 +347,47 @@ const navigate=useNavigate();
           <div className="profile-form">
             <div className="profile-form-group">
               <label>
-                Job Title{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Job Title <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Job Title"
                 value={form.jobTitle}
-                onChange={handleChange(
-                  "jobTitle"
-                )}
+                onChange={handleChange("jobTitle")}
               />
             </div>
 
             <div className="profile-form-group">
               <label>
-                Company{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Company <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Company"
                 value={form.company}
-                onChange={handleChange(
-                  "company"
-                )}
+                onChange={handleChange("company")}
               />
             </div>
 
             <div className="profile-form-group">
               <label>
-                Start Date{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Start Date <span className="required-star">*</span>
               </label>
-
               <input
                 type="date"
                 value={form.startDate}
-                onChange={handleChange(
-                  "startDate"
-                )}
+                onChange={handleChange("startDate")}
               />
             </div>
 
             <div className="profile-form-group">
               <label>
-                End Date{" "}
-                <span className="required-star">
-                  *
-                </span>
+                End Date <span className="required-star">*</span>
               </label>
-
               <input
                 type="date"
                 value={form.endDate}
-                onChange={handleChange(
-                  "endDate"
-                )}
+                onChange={handleChange("endDate")}
               />
             </div>
 
@@ -494,12 +404,8 @@ const navigate=useNavigate();
           <div className="profile-form">
             <div className="profile-form-group">
               <label>
-                Skill{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Skill <span className="required-star">*</span>
               </label>
-
               <input
                 type="text"
                 placeholder="Enter Skill"
@@ -510,21 +416,13 @@ const navigate=useNavigate();
 
             <div className="profile-form-group">
               <label>
-                Skill Level{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Skill Level <span className="required-star">*</span>
               </label>
-
               <select
                 value={form.skillLevel}
-                onChange={handleChange(
-                  "skillLevel"
-                )}
+                onChange={handleChange("skillLevel")}
               >
-                <option value="">
-                  Select Skill Level
-                </option>
+                <option value="">Select Skill Level</option>
                 <option>Beginner</option>
                 <option>Intermediate</option>
                 <option>Advanced</option>
@@ -545,40 +443,22 @@ const navigate=useNavigate();
           <div className="profile-form">
             <div className="profile-form-group">
               <label>
-                Preferred Industry{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Preferred Industry <span className="required-star">*</span>
               </label>
-
               <select
                 value={form.industry}
-                onChange={handleChange(
-                  "industry"
-                )}
+                onChange={handleChange("industry")}
               >
-                <option value="">
-                  Select Preferred Industry
-                </option>
-                <option>
-                  Information Technology
-                </option>
-                <option>
-                  Banking and Finance
-                </option>
-                <option>
-                  Health Care
-                </option>
+                <option value="">Select Preferred Industry</option>
+                <option>Information Technology</option>
+                <option>Banking and Finance</option>
+                <option>Health Care</option>
                 <option>Education</option>
                 <option>Engineering</option>
                 <option>Construction</option>
-                <option>
-                  Marketing and Sales
-                </option>
+                <option>Marketing and Sales</option>
                 <option>Manufacturing</option>
-                <option>
-                  Hospitality and Tourism
-                </option>
+                <option>Hospitality and Tourism</option>
                 <option>NGO</option>
                 <option>Other</option>
               </select>
@@ -597,21 +477,13 @@ const navigate=useNavigate();
           <div className="profile-form">
             <div className="profile-form-group">
               <label>
-                Employment Type{" "}
-                <span className="required-star">
-                  *
-                </span>
+                Employment Type <span className="required-star">*</span>
               </label>
-
               <select
                 value={form.employmentType}
-                onChange={handleChange(
-                  "employmentType"
-                )}
+                onChange={handleChange("employmentType")}
               >
-                <option value="">
-                  Select Employment Type
-                </option>
+                <option value="">Select Employment Type</option>
                 <option>Full Time</option>
                 <option>Part Time</option>
                 <option>Contract</option>
@@ -629,17 +501,9 @@ const navigate=useNavigate();
           </div>
         )}
 
-        {error && (
-          <p className="profile-error">
-            {error}
-          </p>
-        )}
+        {error && <p className="profile-error">{error}</p>}
 
-        {success && (
-          <p className="profile-success">
-            {success}
-          </p>
-        )}
+        {success && <p className="profile-success">{success}</p>}
       </main>
     </div>
   );
@@ -666,16 +530,12 @@ function NavigationButtons({
       <button
         type="button"
         className={`profile-next-button ${
-          canContinue
-            ? "profile-next-active"
-            : ""
+          canContinue ? "profile-next-active" : ""
         }`}
         disabled={!canContinue}
         onClick={onNext}
       >
-        {currentStep === 6
-          ? "SUBMIT"
-          : "NEXT"}
+        {currentStep === 6 ? "SUBMIT" : "NEXT"}
         <span>›</span>
       </button>
     </div>
