@@ -198,125 +198,41 @@ function Home() {
   </div>
 
 </section>
-    {/* ================= TOP CATEGORIES ================= */}
+   {/* ================= TOP CATEGORIES ================= */}
 <section className="top-categories-section">
 
   <h2>Top Categories</h2>
 
   <div className="categories-grid">
 
-    <button
-      className="category-card active-category"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Accounting and Finance</span>
-      <span className="category-count">233</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Admin, Secretarial, and Clerical</span>
-      <span className="category-count">53</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Agriculture</span>
-      <span className="category-count">30</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Architecture and Construction</span>
-      <span className="category-count">14</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Automotive</span>
-      <span className="category-count">15</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Banking and Insurance</span>
-      <span className="category-count">30</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Business and Administration</span>
-      <span className="category-count">193</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Business Development</span>
-      <span className="category-count">34</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Communications, Media and Journalism</span>
-      <span className="category-count">27</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Consultancy and Training</span>
-      <span className="category-count">33</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Creative Arts</span>
-      <span className="category-count">19</span>
-    </button>
-
-    <button
-      className="category-card"
-      onClick={() => window.location.href = "/jobs"}
-    >
-      <span className="category-arrow">▶</span>
-      <span className="category-name">Education and Training</span>
-      <span className="category-count">20</span>
-    </button>
+    {[
+      { name: "Accounting and Finance", count: 233 },
+      { name: "Admin, Secretarial, and Clerical", count: 53 },
+      { name: "Agriculture", count: 30 },
+      { name: "Architecture and Construction", count: 14 },
+      { name: "Automotive", count: 15 },
+      { name: "Banking and Insurance", count: 30 },
+      { name: "Business and Administration", count: 193 },
+      { name: "Business Development", count: 34 },
+      { name: "Communications, Media and Journalism", count: 27 },
+      { name: "Consultancy and Training", count: 33 },
+      { name: "Creative Arts", count: 19 },
+      { name: "Education and Training", count: 20 },
+    ].map((category, index) => (
+      <button
+        key={category.name}
+        className={`category-card ${index === 0 ? "active-category" : ""}`}
+        onClick={() => navigate("/jobs")}
+      >
+        <span className="category-arrow">▶</span>
+        <span className="category-name">{category.name}</span>
+        <span className="category-count">{category.count}</span>
+      </button>
+    ))}
 
   </div>
 
 </section>
-
 
 {/* ================= FEATURED COMPANIES ================= */}
 
